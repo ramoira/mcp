@@ -1,8 +1,8 @@
 # @ramoira/mcp
 
-MCP server exposing the Ramoira brand schema specification as tools and resources.
+> **Archived prototype. Not published to npm, and not maintained.** This server serves the schema format Ramoira used before spec 3.0: layers of facts and voice with scored personality dimensions, and no rule registry. That format has been replaced. The current one is [spec 3.2.0](https://github.com/ramoira/brand-schema-spec), and the [CLI](https://github.com/ramoira/cli) drafts and checks against it. The text this server returns also makes claims Ramoira no longer makes (for example "open standard" and "without hallucination"). Do not build on it. `npm install @ramoira/mcp` and `npx @ramoira/mcp` do not work, because the package was never published.
 
-Any MCP-compatible client (Claude Desktop, Cursor, Windsurf, etc.) can connect to this server and use it to generate, validate, or reason about Ramoira brand schemas — without needing the CLI installed.
+This repository is kept as a record of an early MCP server that exposed that earlier specification as tools and resources.
 
 ## What it exposes
 
@@ -10,95 +10,38 @@ Any MCP-compatible client (Claude Desktop, Cursor, Windsurf, etc.) can connect t
 
 | Tool | Description |
 |---|---|
-| `get_spec_overview` | High-level explanation of the schema format, its five layers, and key concepts. Start here. |
-| `get_layer_spec(layer)` | Full field definitions for one layer: `identity`, `narrative`, `voice`, `commercial`, or `governance`. |
-| `get_valid_enums()` | All valid enum values for every constrained field, with field paths. |
-| `get_example_schema()` | A high-quality worked example (Rolex) showing what well-populated fields look like. |
-| `search_spec(query)` | Keyword search across all spec documentation. |
+| `get_spec_overview` | An overview of the earlier schema format and its layers. |
+| `get_layer_spec(layer)` | Field definitions for one layer: `identity`, `narrative`, `voice`, `commercial`, or `governance`. |
+| `get_valid_enums()` | The enum values the earlier format allowed, with field paths. |
+| `search_spec(query)` | Keyword search across that documentation. |
 
 ### Resources
 
 | URI | Description |
 |---|---|
-| `ramoira://spec` | Spec overview as a plain text resource. |
-| `ramoira://enums` | Valid enum values as a JSON resource. |
+| `ramoira://spec` | The overview as a plain text resource. |
+| `ramoira://enums` | The enum values as a JSON resource. |
 
-## How it fits into Ramoira
+## Run it from source
 
-```
-ramoira/brand-schema-spec   ← the spec (source of truth)
-        │
-        ▼
-ramoira/mcp                 ← this package
-  serves the spec as MCP tools so any LLM can consume it
-        │
-        ├─► Claude Desktop / Cursor / any MCP client
-        │     Any LLM session can look up the spec on demand
-        │
-        └─► ramoira/cli (internally)
-              ramoira init uses the same tool set locally
-              to give Claude spec access during schema generation
-```
-
-The CLI's generator mirrors this tool set locally (no network dependency) so `ramoira init` works offline. This server is for external LLM workflows — any agent that needs to generate or validate a schema can connect here instead of inlining the spec in its prompt.
-
-## Install
+It uses stdio transport, so it works with local MCP clients.
 
 ```bash
-npm install -g @ramoira/mcp
+npm install
+npm run build   # compile to dist/
+npm start       # node dist/server.js
+npm run dev     # run via tsx, no build step
 ```
 
-Or run directly without installing:
-
-```bash
-npx @ramoira/mcp
-```
-
-## Configure in Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+To point a local client at your build, use the path to `dist/server.js`:
 
 ```json
 {
   "mcpServers": {
-    "ramoira": {
-      "command": "npx",
-      "args": ["@ramoira/mcp"]
+    "ramoira-archived": {
+      "command": "node",
+      "args": ["/path/to/mcp/dist/server.js"]
     }
   }
 }
-```
-
-## Configure in Cursor / VS Code
-
-Add to your MCP settings:
-
-```json
-{
-  "ramoira": {
-    "command": "npx",
-    "args": ["@ramoira/mcp"]
-  }
-}
-```
-
-## Public HTTP hosting
-
-The server currently uses stdio transport, which works for local clients. To serve it publicly over HTTP, replace the transport in `src/server.ts`:
-
-```ts
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-
-const transport = new StreamableHTTPServerTransport({ port: 3000 });
-await server.connect(transport);
-```
-
-Then deploy to any Node.js host. Clients connect to `https://mcp.ramoira.com` (or wherever it's hosted) via the MCP HTTP client.
-
-## Development
-
-```bash
-npm install
-npm run dev     # run via tsx (no build step)
-npm run build   # compile to dist/
 ```
