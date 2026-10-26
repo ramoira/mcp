@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { LAYER_SPECS, VALID_ENUMS, SPEC_OVERVIEW, ROLEX_EXAMPLE } from "./spec.js";
+import { LAYER_SPECS, VALID_ENUMS, SPEC_OVERVIEW } from "./spec.js";
 
 // ── Search helper ─────────────────────────────────────────────────────────────
 
@@ -94,18 +94,6 @@ server.registerTool(
   },
   async () => ({
     content: [{ type: "text", text: JSON.stringify(VALID_ENUMS, null, 2) }],
-  }),
-);
-
-server.registerTool(
-  "get_example_schema",
-  {
-    description:
-      "Get a high-quality worked example of a Ramoira brand schema (Rolex). Use this to understand what well-populated fields look like in practice — the quality bar for voice examples, myth construction, governance constraints, and so on.",
-    inputSchema: {},
-  },
-  async () => ({
-    content: [{ type: "text", text: JSON.stringify(ROLEX_EXAMPLE, null, 2) }],
   }),
 );
 
